@@ -1,13 +1,23 @@
 var server= require("http");
 var url= require("url");
 
-function inicio(){
+function inicio(route, handle){
 	function peticionServidor(peticion, respuesta){
+		var dataPosteada = "";
 		var pathname = url.parse(peticion.url).pathname;
 		console.log("peticion "  + pathname + " recibida");
-		respuesta.writeHead(200,{"Content-Type":"text/html"});
-		respuesta.write("<h1>hola mundo</h1>");
-		respuesta.end();
+
+		peticion.setEncoding("utf8");
+
+        peticion.addListener("data", function(trozoPosteado){
+          dataPosteada += trozoPosteado;
+          console.log("Recibido trozo POST '" + trozoPosteado + "'.");
+         });
+
+        peticion.addListener("end", function() {
+      		route(handle, pathname, respuesta, dataPosteada);
+    	});
+    	
 	}
 	server.createServer(peticionServidor).listen(8000);
 	console.log("Inicio del servidor.");
